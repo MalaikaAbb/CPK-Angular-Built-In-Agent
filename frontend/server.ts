@@ -15,7 +15,12 @@
  * https://docs.copilotkit.ai/angular/guides/a2ui
  */
 import { createServer } from 'node:http';
-import { BuiltInAgent, CopilotRuntime, defineTool } from '@copilotkit/runtime/v2';
+import {
+  BuiltInAgent,
+  CopilotKitIntelligence,
+  CopilotRuntime,
+  defineTool,
+} from '@copilotkit/runtime/v2';
 import { createCopilotNodeListener } from '@copilotkit/runtime/v2/node';
 import { z } from 'zod';
 
@@ -65,12 +70,34 @@ const getWeather = defineTool({
  */
 const agent = () => new BuiltInAgent({ model, prompt, maxSteps: 10, tools: [getWeather] });
 
+// Create the Intelligence client with your project API key. Keep this key on the server.
+const intelligence = new CopilotKitIntelligence({
+  apiKey: process.env.CPK_INTELLIGENCE_API_KEY!,
+});
+
+/**
+ * The Intelligence quickstart calls `authenticateApplicationUser` but leaves it
+ * to the app. This harness has no login, so it uses the fixed identity the doc
+ * allows "only for a local, single-user demo".
+ */
+async function authenticateApplicationUser(_request: Request) {
+  return { id: 'local-user', name: 'Local User' };
+}
+
 const runtime = new CopilotRuntime({
   agents: {
     default: agent(),
     support: agent(),
   },
   a2ui: {},
+  // Pass the Intelligence client to the runtime
+  intelligence,
+  // Identify the user from a verified session or token
+  identifyUser: async (request) => {
+    const user = await authenticateApplicationUser(request);
+    if (!user) throw new Error("Unauthorized");
+    return { id: user.id, name: user.name };
+  },
 });
 
 const port = Number(process.env['PORT'] ?? 8200);
