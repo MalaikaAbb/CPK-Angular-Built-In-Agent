@@ -195,6 +195,55 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
+    title: 'Built-in Agent',
+    routes: [
+      {
+        path: '/server-tools',
+        hasDemo: true,
+        title: 'Server Tools',
+        docPath: '/angular/server-tools',
+        summary:
+          'A defineTool server tool on its own BuiltInAgent, executed in the runtime and called from a chat.',
+        status: 'partial',
+        statusNote:
+          'Only "Defining a tool" runs. The multiple-tools, complex-schema, error-handling, and multi-step snippets use search, db, and searchFlights, which the page never defines, so they are quoted but not mounted.',
+      },
+      {
+        path: '/mcp-servers',
+        hasDemo: true,
+        title: 'MCP Servers',
+        docPath: '/angular/mcp-servers',
+        summary:
+          'BuiltInAgent connected to a local MCP server over SSE and Streamable HTTP, with auth headers, multiple servers, collision prefixes, and a user-managed client.',
+        status: 'partial',
+        statusNote:
+          'No snippet on the page sets maxSteps, so as published each run stops at the tool call without an answer; the harness adds maxSteps: 2. Tool caching, dynamic auth, and combining mcpClients with mcpServers use undefined identifiers and are not mounted.',
+      },
+      {
+        path: '/model-selection',
+        hasDemo: true,
+        title: 'Model Selection',
+        docPath: '/angular/model-selection',
+        summary:
+          'One BuiltInAgent per provider string — OpenAI, Anthropic, Google — plus an explicit apiKey.',
+        status: 'partial',
+        statusNote:
+          'OpenAI runs. Anthropic and Google depend on the runtime’s ANTHROPIC_API_KEY and GOOGLE_API_KEY. MiniMax, custom AI SDK providers, Azure, and OpenRouter need keys or resources this harness does not have and are quoted only.',
+      },
+      {
+        path: '/advanced-configuration',
+        hasDemo: true,
+        title: 'Advanced Configuration',
+        docPath: '/angular/advanced-configuration',
+        summary:
+          'Tool choice, system prompt, generation parameters, provider options, overridable properties, and message forwarding, each on its own BuiltInAgent.',
+        status: 'partial',
+        statusNote:
+          'Every snippet but multi-step runs. On the page’s gpt-5.4-mini, all sampling parameters except maxOutputTokens and maxRetries are dropped as unsupported, and overridable properties has no frontend example.',
+      },
+    ],
+  },
+  {
     title: 'Doc Sync',
     routes: [
       {
