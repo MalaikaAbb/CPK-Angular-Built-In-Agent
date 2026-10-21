@@ -15,6 +15,8 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 /** Files and directories whose contents routes are allowed to display. */
 const TARGETS = [
   'server.ts',
+  'agents',
+  '../mcp-server/server.ts',
   'src/styles.css',
   'src/app/app.config.ts',
   'src/app/features',

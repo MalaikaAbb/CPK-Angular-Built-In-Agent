@@ -53,6 +53,23 @@ export const routes: Routes = [
     path: 'headless/demo',
     loadComponent: () => import('./pages/demos').then((m) => m.HeadlessDemo),
   },
+  {
+    path: 'server-tools/demo',
+    loadComponent: () => import('./pages/demos').then((m) => m.ServerToolsDemo),
+  },
+  {
+    path: 'mcp-servers/demo',
+    loadComponent: () => import('./pages/demos').then((m) => m.McpServersDemo),
+  },
+  {
+    path: 'model-selection/demo',
+    loadComponent: () => import('./pages/demos').then((m) => m.ModelSelectionDemo),
+  },
+  {
+    path: 'advanced-configuration/demo',
+    loadComponent: () =>
+      import('./pages/demos').then((m) => m.AdvancedConfigurationDemo),
+  },
 
   // Doc routes, inside the sidebar chrome.
   {
@@ -86,6 +103,19 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/attachments'),
       },
       { path: 'headless', loadComponent: () => import('./pages/headless') },
+      {
+        path: 'server-tools',
+        loadComponent: () => import('./pages/server-tools'),
+      },
+      { path: 'mcp-servers', loadComponent: () => import('./pages/mcp-servers') },
+      {
+        path: 'model-selection',
+        loadComponent: () => import('./pages/model-selection'),
+      },
+      {
+        path: 'advanced-configuration',
+        loadComponent: () => import('./pages/advanced-configuration'),
+      },
       { path: 'status', loadComponent: () => import('./pages/status') },
       { path: 'doc-sync', loadComponent: () => import('./pages/doc-sync') },
       { path: '**', redirectTo: '' },

@@ -11,6 +11,13 @@
 import { Component } from '@angular/core';
 
 import { DemoFrame } from '../components/demo-frame';
+import {
+  ADVANCED_CONFIGURATION_AGENTS,
+  MCP_SERVERS_AGENTS,
+  MODEL_SELECTION_AGENTS,
+  SERVER_TOOLS_AGENTS,
+} from '../features/built-in-agent/agent-options';
+import { AgentPickerChatComponent } from '../features/built-in-agent/agent-picker-chat.component';
 import { A2uiChatComponent } from '../features/a2ui/a2ui-chat.component';
 import { MediaChatComponent } from '../features/attachments/media-chat.component';
 import { ChatUiDemoComponent } from '../features/chat-ui/chat-ui-demo.component';
@@ -120,3 +127,47 @@ export class AttachmentsDemo {}
   ></app-demo-frame>`,
 })
 export class HeadlessDemo {}
+
+@Component({
+  selector: 'app-server-tools-demo',
+  imports: [DemoFrame, AgentPickerChatComponent],
+  template: `<app-demo-frame backTo="/server-tools"
+    ><app-agent-picker-chat [agents]="agents"
+  /></app-demo-frame>`,
+})
+export class ServerToolsDemo {
+  protected readonly agents = SERVER_TOOLS_AGENTS;
+}
+
+@Component({
+  selector: 'app-mcp-servers-demo',
+  imports: [DemoFrame, AgentPickerChatComponent],
+  template: `<app-demo-frame backTo="/mcp-servers"
+    ><app-agent-picker-chat [agents]="agents"
+  /></app-demo-frame>`,
+})
+export class McpServersDemo {
+  protected readonly agents = MCP_SERVERS_AGENTS;
+}
+
+@Component({
+  selector: 'app-model-selection-demo',
+  imports: [DemoFrame, AgentPickerChatComponent],
+  template: `<app-demo-frame backTo="/model-selection"
+    ><app-agent-picker-chat [agents]="agents"
+  /></app-demo-frame>`,
+})
+export class ModelSelectionDemo {
+  protected readonly agents = MODEL_SELECTION_AGENTS;
+}
+
+@Component({
+  selector: 'app-advanced-configuration-demo',
+  imports: [DemoFrame, AgentPickerChatComponent],
+  template: `<app-demo-frame backTo="/advanced-configuration"
+    ><app-agent-picker-chat [agents]="agents"
+  /></app-demo-frame>`,
+})
+export class AdvancedConfigurationDemo {
+  protected readonly agents = ADVANCED_CONFIGURATION_AGENTS;
+}

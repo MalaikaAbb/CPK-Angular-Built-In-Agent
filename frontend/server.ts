@@ -24,6 +24,11 @@ import {
 import { createCopilotNodeListener } from '@copilotkit/runtime/v2/node';
 import { z } from 'zod';
 
+import * as advancedConfiguration from './agents/advanced-configuration';
+import * as mcpServers from './agents/mcp-servers';
+import * as modelSelection from './agents/model-selection';
+import * as serverTools from './agents/server-tools';
+
 // The quickstart's model string. `BuiltInAgent` resolves "provider:model" (or
 // "provider/model") against @ai-sdk, and reads the matching provider key from
 // the environment — OPENAI_API_KEY here, ANTHROPIC_API_KEY or GOOGLE_API_KEY if
@@ -100,16 +105,90 @@ const runtime = new CopilotRuntime({
   },
 });
 
+// built-in-agent pages : separate runtime start
+/**
+ * The Built-in Agent pages (Server Tools, MCP Servers, Model Selection,
+ * Advanced Configuration) each show `new BuiltInAgent({...})` and nothing
+ * about registering it. Every runnable snippet is registered under its own key
+ * so each route's demo can bind a chat to exactly that configuration. The
+ * snippets live verbatim in `agents/`.
+ *
+ * They are served by a second runtime, without Intelligence, at
+ * `/api/copilotkit-builtin`. Registered on the Intelligence runtime above, the
+ * nineteen extra agents broke chat on every route: the browser timed out
+ * joining the run's realtime channel. With only `default` and `support` it
+ * does not. The four demo routes point their own `provideCopilotKit` here.
+ */
+const builtInAgentPages = {
+  'server-tools': serverTools.definingATool(),
+  'mcp-sse': mcpServers.sseTransport(),
+  'mcp-sse-auth': mcpServers.authenticationHeaders(),
+  'mcp-http': mcpServers.httpTransport(),
+  'mcp-multiple': mcpServers.multipleServers(),
+  'mcp-collisions': mcpServers.toolNameCollisions(),
+  'mcp-with-server-tools': mcpServers.combiningWithServerTools(),
+  'model-openai': modelSelection.openAi(),
+  'model-anthropic': modelSelection.anthropic(),
+  'model-google': modelSelection.google(),
+  'model-api-key': modelSelection.apiKeyInConfiguration(),
+  'adv-tool-choice': advancedConfiguration.toolChoice(),
+  'adv-system-prompt': advancedConfiguration.systemPrompt(),
+  'adv-generation': advancedConfiguration.generationParameters(),
+  'adv-openai-reasoning': advancedConfiguration.openAiReasoningEffort(),
+  'adv-anthropic-thinking': advancedConfiguration.anthropicAdaptiveThinking(),
+  'adv-overridable': advancedConfiguration.overridableProperties(),
+  'adv-message-forwarding': advancedConfiguration.messageForwarding(),
+};
+
+/**
+ * "User-managed MCP clients" connects to the MCP server before the agent
+ * exists. If `../mcp-server` is not up yet, only this key is missing — the
+ * rest of the runtime keeps serving — and the next request tries again.
+ */
+let mcpClientsAgent: Promise<BuiltInAgent> | undefined;
+async function resolveMcpClientsAgent(): Promise<BuiltInAgent | undefined> {
+  mcpClientsAgent ??= mcpServers.userManagedMcpClients();
+  try {
+    return await mcpClientsAgent;
+  } catch (error) {
+    mcpClientsAgent = undefined;
+    console.error('[mcp-clients] could not connect to the MCP server:', error);
+    return undefined;
+  }
+}
+
+const builtInAgentRuntime = new CopilotRuntime({
+  agents: async () => {
+    const mcpClients = await resolveMcpClientsAgent();
+    return {
+      ...builtInAgentPages,
+      ...(mcpClients ? { 'mcp-clients': mcpClients } : {}),
+    };
+  },
+});
+
+const builtInAgentListener = createCopilotNodeListener({
+  runtime: builtInAgentRuntime,
+  basePath: '/api/copilotkit-builtin',
+  cors: true,
+});
+// built-in-agent pages : separate runtime end
+
 const port = Number(process.env['PORT'] ?? 8200);
 
-createServer(
-  createCopilotNodeListener({
-    runtime,
-    basePath: '/api/copilotkit',
-    cors: true,
-  }),
+const listener = createCopilotNodeListener({
+  runtime,
+  basePath: '/api/copilotkit',
+  cors: true,
+});
+
+createServer((req, res) =>
+  req.url?.startsWith('/api/copilotkit-builtin')
+    ? builtInAgentListener(req, res)
+    : listener(req, res),
 ).listen(port, () => {
   console.log(`Copilot Runtime listening at http://localhost:${port}/api/copilotkit`);
+  console.log(`Built-in Agent pages runtime at http://localhost:${port}/api/copilotkit-builtin`);
   console.log(`Built-in agent model: ${model}`);
   if (!process.env['OPENAI_API_KEY'] && model.startsWith('openai')) {
     console.warn('OPENAI_API_KEY is not set — the agent will fail on the first message.');
